@@ -165,7 +165,8 @@ static THD_FUNCTION(ProcessImage, arg) {
 }
 
 float get_distance_cm(void){
-	return distance_cm;
+	//return distance_cm;
+	return 0;
 }
 
 uint16_t get_line_position(void){

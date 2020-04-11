@@ -20,9 +20,13 @@ extern "C" {
 #define GOAL_DISTANCE 			10.0f
 #define MAX_DISTANCE 			25.0f
 #define ERROR_THRESHOLD			0.1f	//[cm] because of the noise of the camera
-#define KP						800.0f
+#define KP_1					800.0f
 #define KI 						3.5f	//must not be zero
+#define KD						1       // 1000 fois plus petit car dérivée en milliseconde
+#define KP_2					1
 #define MAX_SUM_ERROR 			(MOTOR_SPEED_LIMIT/KI)
+#define CLOCK_PI				10      // [ms] time of the PI thread frequency
+#define REGULAR_SPEED           300     // [step/s]
 
 /** Robot wide IPC bus. */
 extern messagebus_t bus;
