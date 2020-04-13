@@ -17,6 +17,9 @@
 #include <pi_regulator.h>
 #include <process_image.h>
 
+//coucou ca va
+
+
 void SendUint8ToComputer(uint8_t* data, uint16_t size) 
 {
 	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
@@ -87,3 +90,4 @@ void __stack_chk_fail(void)
 {
     chSysHalt("Stack smashing detected");
 }
+
