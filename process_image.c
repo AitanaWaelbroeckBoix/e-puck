@@ -5,6 +5,7 @@
 
 #include <main.h>
 #include <camera/po8030.h>
+#include <leds.h>
 
 #include <process_image.h>
 
@@ -142,6 +143,8 @@ uint8_t traffic_light(uint8_t *buffer){
 	if(contrast_number > MIN_CONTRAST){
 
 		chprintf((BaseSequentialStream *)&SD3,"- GO -");
+		set_body_led(1);
+		set_led(4,0);
 		/*gpio_set(LED1);
 		gpio_set(LED3);
 		gpio_set(LED5);
@@ -154,6 +157,8 @@ uint8_t traffic_light(uint8_t *buffer){
 	else{
 
 		chprintf((BaseSequentialStream *)&SD3,"- STOP -");
+		set_body_led(0);
+		set_led(4,1);
 		/*gpio_clear(LED1);
 		gpio_clear(LED3);
 		gpio_clear(LED5);

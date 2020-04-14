@@ -17,7 +17,6 @@
 #include <pi_regulator.h>
 #include <process_image.h>
 
-//coucou ca va
 
 
 void SendUint8ToComputer(uint8_t* data, uint16_t size) 
@@ -69,7 +68,6 @@ int main(void)
 	gpio_config_output_opendrain(LED5);
 	gpio_config_output_opendrain(LED7);
 */
-
 
 
 	//stars the threads for the pi regulator and the processing of the image
