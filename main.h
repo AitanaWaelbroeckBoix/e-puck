@@ -11,11 +11,6 @@ extern "C" {
 
 
 //constants for the differents parts of the project
-/*#define LED1     	GPIOD, 5
-#define LED3     	GPIOD, 6
-#define LED5     	GPIOD, 10
-#define LED7     	GPIOD, 11
-#define BODY_LED	GPIOB, 2*/
 #define IMAGE_BUFFER_SIZE		640
 #define WIDTH_SLOPE				5
 #define MIN_LINE_WIDTH			40
@@ -34,10 +29,10 @@ extern "C" {
 #define MAX_SUM_ERROR 			(MOTOR_SPEED_LIMIT/KI)
 #define GO 						1
 #define STOP 					0
-#define NB_PX_LOCAL_MEAN   		150
-#define MEAN_COEFF				1.7
-#define MIN_CONTRAST			10
-#define CONTRAST_COEFF			0.5
+#define NB_PX_LOCAL_MEAN   		150 // nb de pixels où on fait la moyenne locale
+#define MEAN_COEFF				1.7 // coefficient pour la moyenne général
+#define MIN_CONTRAST			10  // seuil pour vert
+#define CONTRAST_COEFF			0.5 // 0.5 * la moyenne > si en dessous, très petit
 
 
 /** Robot wide IPC bus. */

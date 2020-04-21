@@ -28,7 +28,7 @@
 		<link>
 			<name>e-puck2_main-processor</name>
 			<type>2</type>
-			<locationURI>PARENT-2-PROJECT_LOC/lib/e-puck2_main-processor</locationURI>
+			<location>C:/Users/blanc/OneDrive/Documents/epfl/lib/e-puck2_main-processor</location>
 		</link>
 	</linkedResources>
 	<variableList>
