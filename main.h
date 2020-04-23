@@ -9,8 +9,6 @@ extern "C" {
 #include "msgbus/messagebus.h"
 #include "parameter/parameter.h"
 
-
-//constants for the differents parts of the project
 #define IMAGE_BUFFER_SIZE		640
 #define WIDTH_SLOPE				5
 #define MIN_LINE_WIDTH			40
@@ -19,8 +17,7 @@ extern "C" {
 #define PXTOCM					1570.0f //experimental value
 #define GOAL_DISTANCE 			10.0f
 #define MAX_DISTANCE 			25.0f
-#define ERROR_THRESHOLD			0.1f	//[cm] because of the noise of the camera
-#define KP_1					800.0f
+#define ERROR_THRESHOLD			0.1f	//[cm] because of the noise of the camera#define KP_1					800.0f
 #define KI						3.5f	//must not be zero
 #define KD_1					1      // sans unité ( à tuner )
 #define KP_2					2
@@ -29,10 +26,11 @@ extern "C" {
 #define MAX_SUM_ERROR 			(MOTOR_SPEED_LIMIT/KI)
 #define GO 						1
 #define STOP 					0
-#define NB_PX_LOCAL_MEAN   		150 // nb de pixels où on fait la moyenne locale
-#define MEAN_COEFF				1.7 // coefficient pour la moyenne général
-#define MIN_CONTRAST			10  // seuil pour vert
-#define CONTRAST_COEFF			0.5 // 0.5 * la moyenne > si en dessous, très petit
+
+#define NB_PX_LOCAL_MEAN   		200
+#define MEAN_COEFF				1.5
+#define MIN_CONTRAST			2
+#define CONTRAST_COEFF			0.9
 
 
 /** Robot wide IPC bus. */

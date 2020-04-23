@@ -17,8 +17,6 @@
 #include <pi_regulator.h>
 #include <process_image.h>
 
-
-
 void SendUint8ToComputer(uint8_t* data, uint16_t size) 
 {
 	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
@@ -54,21 +52,8 @@ int main(void)
 	po8030_start();
 	//inits the motors
 	motors_init();
-/*
-	// Enable GPIOB and GPIOD peripheral clock for the LEDs
-	RCC->AHB1ENR    |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIODEN;
-
-	// BODY_LED init
-    gpio_set(BODY_LED);
-	gpio_config_output_pushpull(BODY_LED);
-
-	// LEDs defined in main.h
-	gpio_config_output_opendrain(LED1);
-	gpio_config_output_opendrain(LED3);
-	gpio_config_output_opendrain(LED5);
-	gpio_config_output_opendrain(LED7);
-*/
-
+	//starts ToF sensor
+	VL53L0X_start();
 
 	//stars the threads for the pi regulator and the processing of the image
 	process_image_start();
@@ -88,4 +73,3 @@ void __stack_chk_fail(void)
 {
     chSysHalt("Stack smashing detected");
 }
-

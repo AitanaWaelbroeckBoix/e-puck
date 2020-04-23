@@ -10,14 +10,13 @@
 #include <pi_regulator.h>
 #include <process_image.h>
 
-//simple PID regulator implementation for the translation
-int16_t pid_regulator_translation(float distance, float goal){
+//simple PI regulator implementation
+int16_t pi_regulator(float distance, float goal){
 
 	float error = 0;
 	float speed = 0;
 
 	static float sum_error = 0;
-	static float alt_error = 0;
 
 	error = distance - goal;
 
@@ -37,26 +36,9 @@ int16_t pid_regulator_translation(float distance, float goal){
 		sum_error = -MAX_SUM_ERROR;
 	}
 
-	speed = KP_1 * error + KI * sum_error + KD_1 * ((error - alt_error)/PI_CLOCK);
-	alt_error = error;
+	speed = KP * error + KI * sum_error;
+
     return (int16_t)speed;
-}
-// PD regulator to let the robot rotate to be front of the line
-uint16_t pd_regulator_rotation(uint16_t error)
-{
-	uint16_t speed = 0;
-	static uint16_t alt_error = 0;
-
-	if(fabs(error) < ERROR_THRESHOLD)
-	{
-		return 0;
-	}
-
-	speed = KP_2 * error + KD_2 * ((alt_error - error)/PI_CLOCK);
-	alt_error = error;
-
-    return (uint16_t)speed;
-
 }
 
 static THD_WORKING_AREA(waPiRegulator, 256);
@@ -68,7 +50,7 @@ static THD_FUNCTION(PiRegulator, arg) {
     systime_t time;
 
     int16_t speed = 0;
-    int16_t speed_rotation = 0;
+    int16_t speed_correction = 0;
 
     while(1){
         time = chVTGetSystemTime();
@@ -81,13 +63,17 @@ static THD_FUNCTION(PiRegulator, arg) {
         else{
         	speed = STOP;
         }
+        //computes a correction factor to let the robot rotate to be in front of the line
+        //speed_correction = get_error_line_position();
 
-        // give the value of the rotation speed to be on the line
-        speed_rotation = pd_regulator_rotation(get_error_line_position());
+        //if the line is nearly in front of the camera, don't rotate
+        if(abs(speed_correction) < ROTATION_THRESHOLD){
+        	speed_correction = 0;
+        }
 
         //applies the speed from the PI regulator and the correction for the rotation
-        //right_motor_set_speed(speed - speed_rotation);
-		//left_motor_set_speed(speed + speed_rotation);
+        //right_motor_set_speed(speed - ROTATION_COEFF * speed_correction);
+		//left_motor_set_speed(speed + ROTATION_COEFF * speed_correction);
         right_motor_set_speed(speed);
         left_motor_set_speed(speed );
 
