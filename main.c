@@ -7,7 +7,7 @@
 #include "hal.h"
 #include "memory_protection.h"
 #include "leds.h"
-//#include <gpio.h>
+#include "sensors/VL53L0X/VL53L0X.h"
 #include <usbcfg.h>
 #include <main.h>
 #include <motors.h>
