@@ -6,6 +6,8 @@
 #include "ch.h"
 #include "hal.h"
 #include "memory_protection.h"
+#include "leds.h"
+#include "sensors/VL53L0X/VL53L0X.h"
 #include <usbcfg.h>
 #include <main.h>
 #include <motors.h>
@@ -17,9 +19,9 @@
 
 void SendUint8ToComputer(uint8_t* data, uint16_t size) 
 {
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
-	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
+	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
+	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
+	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
 }
 
 static void serial_start(void)
@@ -44,16 +46,18 @@ int main(void)
     //starts the serial communication
     serial_start();
     //start the USB communication
-    usb_start();
+    usb_start(); ////////////////////////////////////////////////////////////////ATTENTION
     //starts the camera
     dcmi_start();
 	po8030_start();
 	//inits the motors
 	motors_init();
+	//starts ToF sensor
+	VL53L0X_start();
 
 	//stars the threads for the pi regulator and the processing of the image
-	pi_regulator_start();
 	process_image_start();
+	pi_regulator_start();
 
     /* Infinite loop. */
     while (1) {

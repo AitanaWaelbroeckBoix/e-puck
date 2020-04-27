@@ -9,24 +9,32 @@ extern "C" {
 #include "msgbus/messagebus.h"
 #include "parameter/parameter.h"
 
-
-//constants for the differents parts of the project
 #define IMAGE_BUFFER_SIZE		640
 #define WIDTH_SLOPE				5
 #define MIN_LINE_WIDTH			40
 #define ROTATION_THRESHOLD		10
-#define ROTATION_COEFF			2 
 #define PXTOCM					1570.0f //experimental value
-#define GOAL_DISTANCE 			10.0f
+#define GOAL_DISTANCE 			100.0f
 #define MAX_DISTANCE 			25.0f
 #define ERROR_THRESHOLD			0.1f	//[cm] because of the noise of the camera
 #define KP_1					800.0f
-#define KI 						3.5f	//must not be zero
-#define KD						1       // 1000 fois plus petit car dérivée en milliseconde
-#define KP_2					1
+#define KI						3.5f	//must not be zero
+#define KD_1					1      // sans unité ( à tuner )
+#define KP_2					2
+#define KD_2					0.001   // [m]  (à tuner)
+#define PI_CLOCK				10    // ATTENTION en ms à prendre en compte pour les KD
 #define MAX_SUM_ERROR 			(MOTOR_SPEED_LIMIT/KI)
-#define CLOCK_PI				10      // [ms] time of the PI thread frequency
-#define REGULAR_SPEED           300     // [step/s]
+#define GO 						1
+#define STOP 					0
+#define NB_PX_LOCAL_MEAN   		200
+#define MEAN_COEFF				1.5
+#define CONTRAST_COEFF			0.9
+#define FOLLOW_LINE				0
+#define TRAFFIC_LIGHT			1
+#define MIN_CONT_TRESHOLD		65
+#define	MAX_CONT_TRESHOLD		180
+#define MIN_CONTRAST			1
+#define MAX_CONTRAST			10
 
 /** Robot wide IPC bus. */
 extern messagebus_t bus;

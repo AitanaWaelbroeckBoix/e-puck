@@ -9,15 +9,14 @@
 #include <motors.h>
 #include <pi_regulator.h>
 #include <process_image.h>
+#include <sensors/VL53L0X/VL53L0X.h>
 
-//PID regulator for translation
-int16_t pi_regulator_translation(float distance, float goal){
+//simple PI regulator implementation
+//error in cm
+int16_t pid_regulator(float distance, float goal){
 
-	float error = 0;
-	float speed = 0;
-
-	static float alt_error =0;
-	static float sum_error = 0;
+	float error = 0, speed = 0;
+	static float sum_error = 0, alt_error_pid = 0;
 
 	error = distance - goal;
 
@@ -37,28 +36,29 @@ int16_t pi_regulator_translation(float distance, float goal){
 		sum_error = -MAX_SUM_ERROR;
 	}
 
-	speed = KP_1 * error + KI * sum_error + KD * ((error - alt_error)/ CLOCK_PI);
+	speed = KP_1 * error + KI * sum_error + KD_1 * ((error - alt_error_pid)/PI_CLOCK);
+	alt_error_pid = error;
+
+	chprintf((BaseSequentialStream *)&SD3,"- SPEED %d -", speed);
 
     return (int16_t)speed;
 }
 
-// P regulator to let the robot rotate to be front of the line
-uint16_t pi_regulator_rotation(int16_t line_position)
+// PD regulator to let the robot rotate to be front of the line
+//error in pixels
+uint16_t pd_regulator_rotation(uint16_t error)
 {
-	uint16_t error = 0;
 	uint16_t speed = 0;
+	static float alt_error_pd =0;
 
-	error = line_position - (IMAGE_BUFFER_SIZE/2);
-
-	if(fabs(error) < ERROR_THRESHOLD)
-	{
+	if(fabs(error) < ROTATION_THRESHOLD){
 		return 0;
 	}
 
-	speed = KP_2 * error;
+	speed = KP_2 * error + KD_2 * ((error - alt_error_pd)/PI_CLOCK);
+	alt_error_pd = error;
 
-    return speed;
-
+    return (uint16_t)speed;
 }
 
 static THD_WORKING_AREA(waPiRegulator, 256);
@@ -68,29 +68,40 @@ static THD_FUNCTION(PiRegulator, arg) {
     (void)arg;
 
     systime_t time;
-
-    int16_t speed_translation = 0;
-    int16_t speed_rotation = 0;
+    int16_t speed = 0, speed_correction = 0;
+    uint16_t distance = 0;
 
     while(1){
         time = chVTGetSystemTime();
         
         //computes the speed to give to the motors
-        //distance_cm is modified by the image processing thread
-        if (get_distance_cm() != 0)
-        {
-        	speed_translation = pi_regulator_translation(get_distance_cm(), GOAL_DISTANCE);
+        if (get_stop_or_go()){
+            //sets the speed so that the robot always stays at 10cm of the car in front of him
+        	/*distance = VL53L0X_get_dist_mm()/10;
+
+        	chprintf((BaseSequentialStream *)&SD3,"- DISTANCE %d -", distance);
+        	if(distance > GOAL_DISTANCE){<
+        		speed = 200;
+        	}
+        	else{
+        		speed = pid_regulator(distance, GOAL_DISTANCE);
+
+        	}*/
+        	speed = 200;
+
         }
-        else
-        	speed_rotation = REGULAR_SPEED;
+        else{
+        	speed = STOP;
+        }
 
         //computes a correction factor to let the robot rotate to be in front of the line
-        speed_rotation = pi_regulator_rotation(get_line_position());
+        speed_correction = pd_regulator_rotation(get_error_line_position());
 
         //applies the speed from the PI regulator and the correction for the rotation
-		right_motor_set_speed(speed_translation - ROTATION_COEFF * speed_rotation);
-		left_motor_set_speed(speed_translation + ROTATION_COEFF * speed_rotation);
+        right_motor_set_speed(speed - speed_correction);
+        left_motor_set_speed(speed + speed_correction);
 
+        //chprintf((BaseSequentialStream *)&SD3,"- ERROR %d -",get_error_line_position());
         //100Hz
         chThdSleepUntilWindowed(time, time + MS2ST(10));
     }
