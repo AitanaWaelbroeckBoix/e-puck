@@ -142,19 +142,19 @@ uint8_t traffic_light(uint8_t *buffer){
 	// if there are many pixels at low red intensity
 	if(max_contrast_number < MAX_CONTRAST){
 		//chprintf((BaseSequentialStream *)&SD3,"- MAX_TROUVE -");
-		leds_go();
+		//leds_go();
 		return GO;
 	}
 	// then it means that the light is green
 	if(min_contrast_number > MIN_CONTRAST){
 		//chprintf((BaseSequentialStream *)&SD3,"- GREEN -");
-		leds_go();
+		//leds_go();
 		return GO;
 	}
 	// else, the light is red
 	else{
 		//chprintf((BaseSequentialStream *)&SD3,"- RED -");
-		leds_stop();
+		//leds_stop();
 		return STOP;
 	}
 }
