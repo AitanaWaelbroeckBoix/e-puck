@@ -17,13 +17,14 @@
 #include <pi_regulator.h>
 #include <process_image.h>
 
+// à enlever
 void SendUint8ToComputer(uint8_t* data, uint16_t size) 
 {
-	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
-	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
-	//chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)"START", 5);
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)&size, sizeof(uint16_t));
+	chSequentialStreamWrite((BaseSequentialStream *)&SD3, (uint8_t*)data, size);
 }
-
+// à enlever
 static void serial_start(void)
 {
 	static SerialConfig ser_cfg = {
@@ -38,15 +39,14 @@ static void serial_start(void)
 
 int main(void)
 {
-
     halInit();
     chSysInit();
     mpu_init();
 
-    //starts the serial communication
+    // à enlever, starts the serial communication
     serial_start();
-    //start the USB communication
-    usb_start(); ////////////////////////////////////////////////////////////////ATTENTION
+    // à enlever, start the USB communication
+    usb_start();
     //starts the camera
     dcmi_start();
 	po8030_start();
@@ -55,17 +55,17 @@ int main(void)
 	//starts ToF sensor
 	VL53L0X_start();
 
-	//stars the threads for the pi regulator and the processing of the image
+	//starts the threads for the pi_regulator and the processing of the image
 	process_image_start();
 	pi_regulator_start();
 
-    /* Infinite loop. */
-    while (1) {
-    	//waits 1 second
-        chThdSleepMilliseconds(1000);
-    }
+	/* Infinite loop. */
+	while (1) {
+	//waits 1 second
+	chThdSleepMilliseconds(1000);
+	}
 }
-
+//c'est quoi ce truc?
 #define STACK_CHK_GUARD 0xe2dee396
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
 
