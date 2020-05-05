@@ -14,12 +14,14 @@ extern "C" {
 #define MIN_LINE_WIDTH			40
 #define ROTATION_THRESHOLD		10
 #define GOAL_DISTANCE 			8
-#define MAX_DISTANCE 			25.0f
+#define MAX_DISTANCE 			25
 #define MAX_SPEED 				400    //steps/s
 #define ERROR_THRESHOLD			0.1f   //[cm] because of the noise of the camera
-#define KP_1					200.0f
-#define KD_1					50.0f
-#define KP_2					2.0f
+#define KP_1					200
+#define KD_1					50
+#define KI_1					3.5f
+#define MAX_SUM_ERROR 			(MAX_SPEED/KI_1)
+#define KP_2					2
 #define KD_2					0.01f
 #define PI_CLOCK				10     // in ms
 #define GO 						1

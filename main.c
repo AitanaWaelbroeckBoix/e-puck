@@ -14,7 +14,7 @@
 #include <camera/po8030.h>
 #include <chprintf.h>
 
-#include <pi_regulator.h>
+#include <regulators.h>
 #include <process_image.h>
 
 // à enlever
