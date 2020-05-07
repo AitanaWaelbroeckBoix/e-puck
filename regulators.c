@@ -12,6 +12,7 @@
 #include <sensors/VL53L0X/VL53L0X.h>
 
 // PID regulator to keep the robot at a constant distance of the obstacle that's in front of him
+//error in cm
 int16_t pid_regulator_tof(float distance, uint16_t goal){
 
 	float error = 0, speed = 0;
@@ -39,8 +40,6 @@ int16_t pid_regulator_tof(float distance, uint16_t goal){
 
 	alt_error_pid = error;
 
-	//chprintf((BaseSequentialStream *)&SD3,"- SPEED %d -", speed);
-
     return (int16_t)speed;
 }
 
@@ -64,8 +63,8 @@ int16_t pd_regulator_ligne(int16_t error){
     return (int16_t)speed;
 }
 
-//thread in charge of the PD regulators
-static THD_WORKING_AREA(waRegulators, 256);
+//thread in charge of the regulators
+static THD_WORKING_AREA(waRegulators, 1024);
 static THD_FUNCTION(Regulators, arg) {
 
     chRegSetThreadName(__FUNCTION__);
@@ -82,10 +81,8 @@ static THD_FUNCTION(Regulators, arg) {
         //the robot goes at a speed set by the PD of the ToF
         if (get_stop_or_go()){
 
-            //transforms the distance between the robot and the obstacle in cm
-        	distance = VL53L0X_get_dist_mm()/10;
-
-        	//chprintf((BaseSequentialStream *)&SD3,"- DISTANCE %d -", distance);
+        	//transforms the distance between the robot and the obstacle in cm
+        	distance = (float)VL53L0X_get_dist_mm()/10;
 
         	//CHECK OF THE ToF: only uses the PD regulator of the ToF when the robot is too close of the obstacle
         	//of the obstacle in front of him
@@ -102,7 +99,7 @@ static THD_FUNCTION(Regulators, arg) {
         	speed = STOP;
         }
 
-        //computes a correction factor to let the robot rotate to face de line
+        //computes a correction factor to let the robot rotate to face the line
         speed_correction = pd_regulator_ligne(get_error_line_position());
 
         //applies the speed from the Pd regulators and the correction for the rotation
