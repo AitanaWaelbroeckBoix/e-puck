@@ -1,9 +1,6 @@
 #include "ch.h"
 #include "hal.h"
 #include <math.h>
-#include <usbcfg.h>
-#include <chprintf.h>
-
 
 #include <main.h>
 #include <motors.h>
@@ -43,7 +40,7 @@ int16_t pid_regulator_tof(float distance, uint16_t goal){
     return (int16_t)speed;
 }
 
-// PD regulator lets the robot rotate to always face the center of the line he is meant to follow
+//PD regulator lets the robot rotate to always face the center of the line he is meant to follow
 //error in pixels
 int16_t pd_regulator_ligne(int16_t error){
 
@@ -86,7 +83,7 @@ static THD_FUNCTION(Regulators, arg) {
 
         	//CHECK OF THE ToF: only uses the PD regulator of the ToF when the robot is too close of the obstacle
         	//of the obstacle in front of him
-        	//PD of the ToF sets the speed so that the robot always stays at GOAL_DISTANCE (8 cm)
+        	//PD of the ToF sets the speed so that the robot always stays at GOAL_DISTANCE (9 cm)
         	if(distance > GOAL_DISTANCE){
         		speed = MAX_SPEED;
         	}
@@ -102,16 +99,15 @@ static THD_FUNCTION(Regulators, arg) {
         //computes a correction factor to let the robot rotate to face the line
         speed_correction = pd_regulator_ligne(get_error_line_position());
 
-        //applies the speed from the Pd regulators and the correction for the rotation
+        //applies the speed from the PD regulators and the correction for the rotation
         right_motor_set_speed(speed - speed_correction);
         left_motor_set_speed(speed + speed_correction);
 
-        //chprintf((BaseSequentialStream *)&SD3,"- ERROR %d -",get_error_line_position());
         //100Hz
         chThdSleepUntilWindowed(time, time + MS2ST(10));
     }
 }
 
-void pi_regulator_start(void){
+void regulators_start(void){
 	chThdCreateStatic(waRegulators, sizeof(waRegulators), NORMALPRIO, Regulators, NULL);
 }

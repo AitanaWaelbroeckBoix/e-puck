@@ -1,13 +1,10 @@
 #include "ch.h"
 #include "hal.h"
-#include <chprintf.h>
-#include <usbcfg.h>
 #include <stdbool.h>
 
 #include <main.h>
 #include <camera/po8030.h>
 #include <leds.h>
-
 #include <process_image.h>
 
 static int16_t error_line_pos = 0;	//line is in the middle
@@ -23,8 +20,8 @@ int16_t error_line_position(uint8_t *buffer){
 	uint16_t i = 0, begin = 0, end = 0;
 	uint8_t stop = 0, wrong_line = 0, line_not_found = 0;
 	uint32_t mean = 0;
-	int16_t error_position = 0 ;
-	static int16_t last_error_position = 0 ;
+	int16_t error_position = 0;
+	static int16_t last_error_position = 0;
 
 	//performs an average
 	for(uint16_t j = 0 ; j < IMAGE_BUFFER_SIZE ; j++){
@@ -84,7 +81,7 @@ int16_t error_line_position(uint8_t *buffer){
 
 	}while(wrong_line);
 
-	// if no line was found, we return the last error measured
+	//if no line was found, we return the last error measured
 	if(line_not_found)
 	{
 		begin = 0;
@@ -103,30 +100,30 @@ int16_t error_line_position(uint8_t *buffer){
 //returns if a red traffic light has been detected
 uint8_t traffic_light(uint8_t *buffer){
 
-	uint32_t max_mean = 0, local_mean = 0;
+	uint32_t max_sum = 0, local_sum = 0;
 	uint16_t center_of_light = 0;
-	uint8_t min_contrast_number = 0;
-	uint8_t max_contrast_number = 0;
+	uint8_t min_contrast_number = 0, max_contrast_number = 0, stop_or_go = 0;
+	static uint8_t last_stop_or_go = 0, returned_stop_or_go;
 
-	//initialization of the local_mean. This mean value of intensity is calculated over NB_PX_LOCAL_MEAN (200) pixels
-	for(uint16_t i = 0 ; i < (NB_PX_LOCAL_MEAN) ; i++){
-		local_mean += buffer[i];
-		max_mean= local_mean;
-		center_of_light = NB_PX_LOCAL_MEAN/2;
+	//initialization of the local_sum. This sum value of intensity is calculated over NB_PX_LOCAL_SUM (200) pixels
+	for(uint16_t i = 0 ; i < (NB_PX_LOCAL_SUM) ; i++){
+		local_sum += buffer[i];
+		max_sum= local_sum;
+		center_of_light = NB_PX_LOCAL_SUM/2;
 	}
 
-	//search for the center of max_mean, max_mean is the highest mean value computed on NB_PX_LOCAL_MEAN number of pixels
-	for(uint16_t i = 0 ; i < IMAGE_BUFFER_SIZE - NB_PX_LOCAL_MEAN ; i++){
-		local_mean = buffer[NB_PX_LOCAL_MEAN+i]-buffer[i] + local_mean;
+	//search for the center of max_sum, max_sum is the highest sum value computed on NB_PX_LOCAL_SUM number of pixels
+	for(uint16_t i = 0 ; i < IMAGE_BUFFER_SIZE - NB_PX_LOCAL_SUM ; i++){
+		local_sum = buffer[NB_PX_LOCAL_SUM+i]-buffer[i] + local_sum;
 
-		if(local_mean > max_mean){
-			max_mean = local_mean;
-			center_of_light = i + NB_PX_LOCAL_MEAN/2;
+		if(local_sum > max_sum){
+			max_sum = local_sum;
+			center_of_light = i + NB_PX_LOCAL_SUM/2;
 		}
 	}
 
 	//computes the number of pixels with "very high" and "very low" intensity around the peak of intensity
-	for(uint16_t i = center_of_light - NB_PX_LOCAL_MEAN/2 ; i < center_of_light + NB_PX_LOCAL_MEAN/2 ; i++ ){
+	for(uint16_t i = center_of_light - NB_PX_LOCAL_SUM/2 ; i < center_of_light + NB_PX_LOCAL_SUM/2 ; i++ ){
 		if(buffer[i] < MIN_INT_THRESHOLD ){
 			min_contrast_number ++;
 		}
@@ -135,28 +132,45 @@ uint8_t traffic_light(uint8_t *buffer){
 		}
 	}
 
-	//chprintf((BaseSequentialStream *)&SD3,"- MAX_CONTRAST %d -", max_contrast_number);
-	//chprintf((BaseSequentialStream *)&SD3,"- MIN_CONTRAST %d-", min_contrast_number );
-
 	//if there are less pixels at high intensity than MIN_INT_NB_PX, the robot doesn't stop and the body led is on
 	//this is the case when the traffic light is off
 	if(max_contrast_number < MAX_INT_NB_PX){
-		///chprintf((BaseSequentialStream *)&SD3,"- NO_LIGHT -");
-		leds_go();
-		return GO;
+		stop_or_go = GO;
 	}
-	// if there are more pixels at low intensity than MIN_INT_NB_PX, then it means that the light is green
-	if(min_contrast_number > MIN_INT_NB_PX){
-		//chprintf((BaseSequentialStream *)&SD3,"- GREEN -");
-		leds_go();
-		return GO;
-	}
-	// else, the light is red
+
 	else{
-		//chprintf((BaseSequentialStream *)&SD3,"- RED -");
-		leds_stop();
-		return STOP;
+		// if there are more pixels at low intensity than MIN_INT_NB_PX, then it means that the light is green
+		if(min_contrast_number > MIN_INT_NB_PX){
+			stop_or_go = GO;
+		}
+		// else, the light is red
+		else{
+			stop_or_go = STOP;
+		}
 	}
+
+	//FILTER: if the traffic light consecutively detects two equal states of color,
+	//then the state is validated
+	if(stop_or_go == last_stop_or_go)
+	{
+		returned_stop_or_go = stop_or_go;
+	}
+
+	last_stop_or_go = stop_or_go;
+
+
+	if (returned_stop_or_go)
+	{
+		//body front LED on if the robot moves
+		leds_go();
+	}
+	else
+	{
+		//L3,L5,L6 on if the robot stops
+		leds_stop();
+	}
+
+	return returned_stop_or_go;
 }
 
 //in charge of capturing images for the following of the line and the traffic light alternately
@@ -207,7 +221,6 @@ static THD_FUNCTION(ProcessImage, arg) {
 
 	uint8_t *img_buff_ptr;
 	uint8_t image[IMAGE_BUFFER_SIZE] = {0};
-
 	bool camera_mode_local = false;
 
     while(1){
@@ -220,7 +233,7 @@ static THD_FUNCTION(ProcessImage, arg) {
 		//gets the pointer to the array filled with the last image in RGB565
 		img_buff_ptr = dcmi_get_last_image_ptr();
 
-		//Extracts only the red pixels
+		//extracts only the red pixels
 		for(uint16_t i = 0 ; i < (2 * IMAGE_BUFFER_SIZE) ; i+=2){
 			//extracts first 5bits of the first byte
 			//takes nothing from the second byte
@@ -233,6 +246,7 @@ static THD_FUNCTION(ProcessImage, arg) {
 			case FOLLOW_LINE:
 				//search for a line in the image and gets its position error
 				error_line_pos = error_line_position(image);
+
 				break;
 
 			case TRAFFIC_LIGHT:
