@@ -17,9 +17,9 @@ extern "C" {
 #define MAX_DISTANCE 			25
 #define MAX_SPEED 				400    //steps/s
 #define ERROR_THRESHOLD			0.9f   //[cm] because of the noise of the camera
-#define KP_1					200//800
-#define KD_1					50//250
-#define KI_1					3.5f//50
+#define KP_1					200    //800
+#define KD_1					50     //250
+#define KI_1					3.5f   //50
 #define MAX_SUM_ERROR 			(MAX_SPEED/KI_1)
 #define KP_2					2
 #define KD_2					0.01f
