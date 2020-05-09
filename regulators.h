@@ -1,7 +1,7 @@
-#ifndef PI_REGULATOR_H
-#define PI_REGULATOR_H
+#ifndef REGULATORS_H
+#define REGULATORS_H
 
-//start the PI regulator thread
-void pi_regulator_start(void);
+//start the regulators thread
+void regulators_start(void);
 
-#endif /* PI_REGULATOR_H */
+#endif /* REGULATORS_H */
